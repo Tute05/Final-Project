@@ -1,0 +1,3 @@
+script:
+  - ./gradlew test
+  - echo "Testing Coming soon"
