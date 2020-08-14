@@ -1,0 +1,15 @@
+sudo: required
+dist: trusty
+services:
+- docker
+
+language: java
+jdk: oraclejdk8
+
+install:
+  - ./gradlew clean jar
+
+script:
+  - ./gradlew test
+  - echo "Testing Coming soon"
+  
