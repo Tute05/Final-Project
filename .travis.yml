@@ -1,0 +1,43 @@
+sudo: required
+dist: trusty
+services:
+- docker
+
+language: java
+jdk: oraclejdk8
+
+install:
+  - ./gradlew clean jar
+
+script:
+  - ./gradlew test
+  - echo "Testing Coming soon"
+
+after_success:
+- "./gradlew jacocoTestReport"
+- find . -name jacocoTestReport.csv|xargs cat|awk -F',' '{print $3" "$4" "$5}
+before_deploy:
+  - ./gradlew test jacocoTestCoverageVerification
+deploy:
+  provider: script
+  script: echo 'WIP'
+  on:
+    all_branches: true
+jobs:
+  include:
+    - stage: test
+      script: jdk_switcher use oraclejdk9
+      script: COVERAGE=0.5 ./gradlew -P ./monolithic/ui check
+      script: COVERAGE=0.5 ./gradlew -P ./monolithic/service/cart check
+      script: COVERAGE=0.5 ./gradlew -P ./monolithic/service/user check
+      script: find . -name jacocoTestReport.csv|xargs cat|awk -F',' '{print $3" "$4" "$5}'
+
+    - stage: check
+      script: jdk_switcher use oraclejdk9
+      script: COVERAGE=0.5 ./gradlew -P ./monolithic/repository/order check
+      script: COVERAGE=0.5 ./gradlew -P ./monolithic/repository/cart check
+      script: COVERAGE=0.5 ./gradlew -P ./monolithic/repository/product check
+
+script:
+  script: bash -c "echo \"${DOCKER_PASSWORD}\" | docker login --username \"${DOCKER_LOGIN}\" --password-stdin"
+  script: chmod +x ./script/deploy.sh
